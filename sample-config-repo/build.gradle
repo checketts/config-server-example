@@ -1,0 +1,84 @@
+import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.Constructor
+import org.yaml.snakeyaml.nodes.MappingNode
+import org.yaml.snakeyaml.parser.ParserException
+
+//Yaml constructor to help detect duplicate keys. Copied from org.springframework.beans.factory.config.YamlProcessor.StrictMapAppenderConstructor
+class StrictMapAppenderConstructor extends Constructor {
+    @Override
+    protected Map<Object, Object> constructMapping(MappingNode node) {
+        try {
+            return super.constructMapping(node);
+        }
+        catch (IllegalStateException ex) {
+            throw new ParserException("while parsing MappingNode",
+                    node.getStartMark(), ex.getMessage(), node.getEndMark());
+        }
+    }
+
+    @Override
+    protected Map<Object, Object> createDefaultMap() {
+        final Map<Object, Object> delegate = super.createDefaultMap();
+        return new AbstractMap<Object, Object>() {
+            @Override
+            public Object put(Object key, Object value) {
+                if (delegate.containsKey(key)) {
+                    throw new IllegalStateException("Duplicate key: " + key);
+                }
+                return delegate.put(key, value);
+            }
+
+            @Override
+            public Set<java.util.Map.Entry<Object, Object>> entrySet() {
+                return delegate.entrySet();
+            }
+        };
+    }
+}
+
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath group: 'org.yaml', name: 'snakeyaml', version: '1.12'
+    }
+}
+apply plugin: 'idea'
+
+task validateYaml << {
+    def collection = fileTree(dir: '.', includes: ['**/*.yml/**'])
+
+    Yaml yaml = new Yaml(new StrictMapAppenderConstructor());
+
+    def errors = []
+
+    collection.each { File file ->
+        try {
+            def config = yaml.load(new FileReader(file))
+            logger.info "Parsed " + file
+        } catch (Exception e) {
+            errors << "Error parsing '" + file + "': " + e.getProblem() + e.getProblemMark()
+            logger.error("YAML Parsing error. file=" + file, e)
+        }
+    }
+
+    if (!errors.isEmpty()) {
+        throw new RuntimeException("Error:" + errors)
+    }
+}
+
+//install the commit hook if possible, will execute on every gradle evaluation
+def hook = new File('pre-commit.sh')
+def hook_folder = new File('./.git/hooks')
+def installed_hook = new File('./.git/hooks/pre-commit')
+
+if (hook.exists() && hook_folder.exists() && !installed_hook.exists()) {
+    println("Installing pre-commit hook")
+    exec { //use exec to preserve file permissions
+        workingDir '.'
+        commandLine 'cp', hook, installed_hook
+    }
+}

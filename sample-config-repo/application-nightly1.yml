@@ -1,0 +1,26 @@
+deviceDefinitions:
+  MYSQL:
+    defaults:
+      connectionTimeout: 10000
+      driver: com.mysql.jdbc.Driver
+      maxConnectionLifetime: 300000
+      maxPoolSize: 10
+    subtypes:
+      USERS_DB:
+        defaults:
+          username: bobthefish
+        devices:
+          - id: userdb
+            password: '{cipher}{key:nightly1_v1}2293845729384f9fe938e398e3987'
+            url: jdbc:mysql://some.server.com:3306
+            username: frankthesquid
+          - id: secretUserdb2
+            password: '{cipher}{key:nightly1_v1}ace87ac9e8cae9ca0ac9e8c798c7'
+            url: jdbc:mysql://other.server.com:3306
+            username: brucetheshark
+  CACHE:
+    devices:
+      - id: userCache
+        password: '{cipher}{key:nightly1_v1}773e94397d5873f9557663fe4c199ee'
+        url: something:1234
+        username: myusername

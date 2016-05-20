@@ -1,0 +1,18 @@
+spring.cloud.config:
+  server:
+    bootstrap: true
+#    git:
+#      uri: cloud-configuration@localhost:cloud-config.git
+#      searchPaths: '*'
+#    prefix: raw-config
+
+encrypt.key: "symmetricKeyValue_default"
+
+spring.application.name: configServerExample
+
+
+# Needed to select a native EnvironmentRepository rather than a Git EnvironmentRepository (the default)
+spring.profiles.include: native
+
+# ${user.parent.dir} is set in main() to get the parent of ${user.dir}
+spring.cloud.config.server.native.searchLocations: file://${user.parent.dir}/sample-config-repo

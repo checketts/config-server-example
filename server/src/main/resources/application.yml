@@ -1,0 +1,23 @@
+security:
+  basic:
+    enabled: false
+management:
+  security:
+    enabled: false
+
+greeter:
+  name: World
+
+
+config.server:
+  # Ideally would be YAML list, but using comma-separated string because Spring Test does not yet support YAML properties, only <test>.properties
+  authentication.jwt.secrets: "tNYH6mjVwXevTnTrqVne3XrmKUF4a4YP,\
+                              h5zf4MTg6RP7VB44gupy7fDsTHUGMmEx"
+  encrypt.keys:
+    envA_v1: "symmetricKeyValue_envA"
+    envB_v1: "symmetricKeyValue_envB"
+    envB_serviceB_v1: "symmetricKeyValue_envB_serviceB"
+    globalEnvA: "symmetricKeyValue_globalEnvA"
+    nightly1_v1: XmsvMqkDvvdy8ZEtVaTNmcQSNFkJKcft
+
+

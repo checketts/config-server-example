@@ -1,0 +1,94 @@
+buildscript {
+    ext {
+        springBootVersion = '1.3.5.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+def workaroundIdeaBug = { theXml, resourcesParentDir, resourcesType ->
+    def resourcesElements = theXml.asNode().component.content.sourceFolder.findAll {
+        it.@url == "file://\$MODULE_DIR\$/src/${resourcesParentDir}/resources"
+    }
+    if (resourcesElements) {
+        resourcesElements.each { resourcesElement ->
+            def resourcesAttributes = resourcesElement.attributes()
+            resourcesAttributes.remove('isTestSource')
+            resourcesAttributes.put('type', resourcesType)
+        }
+    }
+}
+
+apply plugin: 'eclipse'
+apply plugin: 'spring-boot'
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'idea'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:Brixton.RELEASE"
+        }
+    }
+
+    idea {
+        module.iml.withXml {
+            workaroundIdeaBug(it, 'main', 'java-resource')
+            workaroundIdeaBug(it, 'test', 'java-test-resource')
+        }
+    }
+
+}
+
+def setRunConfig = { xmlFile, name, module, mainClass ->
+    def runManager = xmlFile.asNode().component.find { it.@name == 'RunManager' }
+
+    def runConfig = runManager.configuration.find {
+        it.@name == 'config server (Gradle Generated)' && it.@type == 'SpringBootApplicationConfigurationType'
+    }
+    if (runConfig != null) {
+        runConfig.parent().remove(runConfig)
+    }
+    def conf = runManager.appendNode 'configuration', [default: 'false', name: name,
+                                                       type   : 'SpringBootApplicationConfigurationType', factoryName: 'Spring Boot']
+    conf.appendNode 'extension', [name: "coverage", enabled: "false", merge: "false", sample_coverage: "true", runner: "idea"]
+    conf.appendNode 'option', [name: "SPRING_BOOT_MAIN_CLASS", value: mainClass]
+    conf.appendNode 'option', [name: "VM_PARAMETERS", value: ""]
+    conf.appendNode 'option', [name: "WORKING_DIRECTORY", value: 'file://$MODULE_DIR$']
+    conf.appendNode 'option', [name: "ALTERNATIVE_JRE_PATH"]
+    conf.appendNode 'option', [name: "ACTIVE_PROFILES", value: "local"]
+    conf.appendNode 'module', [name: module]
+    conf.appendNode 'envs', []
+    conf.appendNode 'method', []
+}
+
+idea {
+    project {
+        jdkName = '1.8'
+        languageLevel = '1.8'
+    }
+
+    workspace.iws.withXml { xmlFile ->
+        setRunConfig(xmlFile, "configServer (Gradle Generated)", "server", "com.github.checketts.ConfigServerExampleApplication")
+        setRunConfig(xmlFile, "configClient (Gradle Generated)", "app", "com.github.checketts.ConfigServerClientApplication")
+    }
+
+}
+
+
+
+eclipse {
+    classpath {
+        containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
+        containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
+    }
+}

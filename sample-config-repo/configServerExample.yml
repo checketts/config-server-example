@@ -1,0 +1,11 @@
+
+someKey: '{cipher}5d71d53ed0ed9341303cff5ab71ec4143e9f3e4a35ad2892668a2cea21fcf13e'
+
+greeter:
+  name: Clint
+  from:
+    - First
+    - Second
+    - Third
+
+

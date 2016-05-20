@@ -1,0 +1,17 @@
+endpoints:
+  env.keys-to-sanitize: "password,\
+                         secret,\
+                         key,\
+                         .*credentials.*,\
+                         vcap_services,\
+                         .*\\.keys\\..*,\
+                         .*\\.secrets.*,\
+                         pass,\
+                         salt,\
+                         token,\
+                         deviceDefinitions.*user,\
+                         deviceDefinitions.*username"
+  # configprops disabled because sanitization does not seem to work on prefixes
+  configprops.enabled: false
+
+sample.key: Sample Value

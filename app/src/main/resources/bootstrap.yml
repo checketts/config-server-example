@@ -1,0 +1,5 @@
+spring.application.name: dataHub
+spring.cloud.config.enabled: true
+config.client.secret: fakeButAppeasesSpringInjection
+
+spring.cloud.config.uri: http://localhost:8080/config

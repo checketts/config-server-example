@@ -1,0 +1,2 @@
+org.springframework.cloud.bootstrap.BootstrapConfiguration=\
+  com.github.checketts.cloud.config.ConfigClientBootstrapConfiguration
